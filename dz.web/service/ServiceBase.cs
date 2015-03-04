@@ -8,6 +8,7 @@ namespace dz.web.service
 {
     public class ServiceBase : IService
     {
+        #region 基本操作 增/删/改/查
         public virtual bool Insert(ModelBase model)
         {
             return DBUtility.DbHelperSQL.ExecuteSql(model.GetInsertSQL(), model.GetParameters()) > 0;
@@ -45,6 +46,8 @@ namespace dz.web.service
             }
             return null;
         }
+
+        #endregion
 
         #region 通用方法
 
@@ -94,11 +97,29 @@ namespace dz.web.service
         }
         #endregion
 
+        #region 列表查询和分页查询
 
         public virtual IEnumerable<ModelBase> GetModelList(string where, string order, int top)
         {
             List<ModelBase> list = new List<ModelBase>();
+            
+            var model = this.CreateTemplate();
+            if (model == null) return list;
 
+            string sql =model.GetSelectSQL();
+
+            if(!string.IsNullOrWhiteSpace(where)) sql+=" where "+where;
+
+            if (!string.IsNullOrWhiteSpace(order)) sql += " order by " + order;
+
+            sql= DBUtility.DbHelperSQL.CreateTopnSql(top, sql);
+
+            var dt = DBUtility.DbHelperSQL.Query(sql);
+
+            if (dt.Tables.Count > 0)
+            {
+                return TableToModelList(dt.Tables[0], model);
+            }
 
             return list;
         }
@@ -106,8 +127,37 @@ namespace dz.web.service
         public virtual TableListed GetModelList(string where, string order, int page, int pagesize)
         {
             TableListed tList = new TableListed();
+
+
+            var model = this.CreateTemplate();
+            if (model == null) return tList;
+
+            string sql = model.GetSelectSQL();
+
+            if (!string.IsNullOrWhiteSpace(where)) sql += " where " + where;
+
+            if (!string.IsNullOrWhiteSpace(order)) order = string.IsNullOrWhiteSpace(model.GetIdentityKey()) ? string.Join(",",model.GetPrimaryKeys()) : model.GetIdentityKey(); ;//如果排序字段为空，则默认
+
+            int recordCount = (int)DBUtility.DbHelperSQL.GetSingle(sql);
+            
+
+            sql = DBUtility.DbHelperSQL.CreatePagingSql(recordCount, pagesize, page, sql, order);
+
+            var dt = DBUtility.DbHelperSQL.Query(sql);
+
+            if (dt.Tables.Count > 0)
+            {
+                tList.AddRange(TableToModelList(dt.Tables[0], model));
+            }
+            
+            tList.RecordCount = recordCount;
+            tList.PageSize = pagesize;
+            tList.PageIndex = page;
+
             return tList;
         }
+        #endregion
+
 
         public virtual void ResigterAction()
         {

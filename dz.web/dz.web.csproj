@@ -31,6 +31,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Web" />
@@ -46,11 +47,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommandInfo.cs" />
+    <Compile Include="Controller\AdminBase.cs" />
     <Compile Include="DbHelperSQL.cs" />
     <Compile Include="dz.cs" />
     <Compile Include="Html\ITableListed.cs" />
     <Compile Include="Html\Pager.cs" />
     <Compile Include="Html\TableListed.cs" />
+    <Compile Include="ModelBaseBinder.cs" />
     <Compile Include="model\IModel.cs" />
     <Compile Include="model\ModelBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
